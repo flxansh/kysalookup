@@ -1,0 +1,19 @@
+# Python bytecode cache (keeps your repo clean)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local environments (if you use virtual environments)
+venv/
+env/
+.env
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Personal data or local API keys you might test later
+*.log
+config.json
+secrets.txt
