@@ -5,6 +5,7 @@ import urllib.request
 import json
 import socket
 from urllib.parse import quote
+from concurrent.futures import ThreadPoolExecutor
 
 # Clean ANSI Escape Color Codes
 RED = '\033[31m'      
@@ -24,7 +25,7 @@ def display_menu():
 ██╔═██╗   ╚██╔╝  ╚════██║██╔══██║
 ██║  ██╗   ██║   ███████║██║  ██║
 ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝{R}""")
-    print(f"{W}      [ Developer: Ansh ]{R}\n")
+    print(f"{W}      [ Developer: Ansh ] [ Engine Version: 2.0-Live ]{R}\n")
     
     print(f"{RED}[Core Modules]         {RED}[System & Plugins]{R}")
     print(f" {RED}[01]{W} Phone Number Lookup      {RED}[00]{W} Exit System")
@@ -58,12 +59,21 @@ def print_report(data_dict):
     print(f"{BR} │ {R}")
     print(f"{BR} └── End of Report ─────────────────────────────────────────{R}\n")
 
+def check_subdomain(domain, sub):
+    """Worker function for option 07 network probing."""
+    subdomain = f"{sub}.{domain}"
+    try:
+        ip = socket.gethostbyname(subdomain)
+        return subdomain, ip
+    except socket.gaierror:
+        return None
+
 # Active running application loop
 while True:
     display_menu()
     choice = input(f"{RED}$ {R}").strip()
     
-    if choice == "01":
+    if choice == "01" or choice == "1":
         print(f"\n{YELLOW}[!] Launching Comprehensive Phone Lookup System...{R}")
         target = input("Enter target number (with +, e.g., +91xxxxxxxxx): ").strip()
         try:
@@ -89,7 +99,7 @@ while True:
             print(f"\n{RED}[x] Parsing Error: Verify layout configuration. ({e}){R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "02":
+    elif choice == "02" or choice == "2":
         print(f"\n{YELLOW}[!] Launching UPI Payment Lookup...{R}")
         target = input("Enter target UPI ID to parse (e.g., target@okaxis): ").strip()
         if "@" not in target:
@@ -98,19 +108,38 @@ while True:
             print(f"{GREEN}[*] Formatting VPA target: verification array mapped to gateway endpoints.{R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "03":
+    elif choice == "03" or choice == "3":
         print(f"\n{YELLOW}[!] Launching Vehicle RTO Lookup...{R}")
         target = input("Enter license plate format (e.g., MH12XX1234): ").strip().upper()
         print(f"{GREEN}[*] Registering vehicle tracker for: {target}{R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "04":
-        print(f"\n{YELLOW}[!] Launching Telegram Alias Lookup...{R}")
+    elif choice == "04" or choice == "4":
+        print(f"\n{YELLOW}[!] Launching Live Telegram Alias Lookup...{R}")
         target = input("Enter Telegram handle (without @): ").strip()
-        print(f"{GREEN}[*] Querying Telegram directory reference node for: https://t.me/{target}{R}")
+        print(f"{GREEN}[*] Interrogating Telegram node directory for handle validation...{R}")
+        
+        full_url = f"https://t.me/{target}"
+        try:
+            req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                html_content = response.read().decode('utf-8')
+                # If the alias does not exist, Telegram shows a specific meta attribute redirect page
+                if "tgme_page_extra" in html_content or "View in Telegram" in html_content:
+                    telegram_metrics = {
+                        "Handle Name": f"@{target}",
+                        "Directory Link": full_url,
+                        "Status": "Active Entity Detected",
+                        "Network Target": "Validation Confirmed"
+                    }
+                    print_report(telegram_metrics)
+                else:
+                    print(f"{RED}[x] Handle is unregistered or currently hidden from the public directory index.{R}")
+        except Exception as e:
+            print(f"{RED}[x] Connection Error: System unable to poll active Telegram servers. ({e}){R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "05":
+    elif choice == "05" or choice == "5":
         print(f"\n{YELLOW}[!] Launching Global Username Scanner...{R}")
         target = input("Enter target alias handle: ").strip()
         print(f"{GREEN}[*] Scanning footprint matrices for: {target}...\n{R}")
@@ -125,7 +154,10 @@ while True:
         for name, url_template in platforms.items():
             full_url = url_template.format(target)
             try:
-                req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0'})
+                req = urllib.request.Request(
+                    full_url, 
+                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+                )
                 with urllib.request.urlopen(req, timeout=4) as response:
                     if response.status == 200:
                         found_accounts[name] = full_url
@@ -138,7 +170,7 @@ while True:
             print(f"{RED}[x] No public profiles matched this target handle.{R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "06":
+    elif choice == "06" or choice == "6":
         print(f"\n{YELLOW}[!] Launching Image Metadata (EXIF) Reader...{R}")
         target = input("Enter exact target path to image file (e.g., photo.jpg): ").strip()
         try:
@@ -161,18 +193,35 @@ while True:
             print(f"{RED}[x] Error parsing image file context: {e}{R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "07":
-        print(f"\n{YELLOW}[!] Launching Website Subdomain Mapper...{R}")
-        target = input("Enter core corporate domain root (e.g., target.com): ").strip()
-        print(f"{GREEN}[*] Testing active zone entries against domain infrastructure lists for: {target}{R}")
+    elif choice == "07" or choice == "7":
+        print(f"\n{YELLOW}[!] Launching Live Asynchronous Subdomain Mapper...{R}")
+        target = input("Enter core domain root (e.g., target.com): ").strip().lower().replace("https://", "").replace("http://", "")
+        print(f"{GREEN}[*] Spawning network threads to evaluate active zones for: {target}{R}\n")
+        
+        # High-velocity footprint array (common subdomains)
+        common_subs = ["www", "mail", "ftp", "admin", "blog", "dev", "staging", "api", "test", "portal", "secure", "webmail", "shop", "cpanel"]
+        mapped_subdomains = {}
+        
+        # Multi-threading executor splits the lookups to solve instantly
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(check_subdomain, target, sub) for sub in common_subs]
+            for future in futures:
+                result = future.result()
+                if result:
+                    sub_url, sub_ip = result
+                    mapped_subdomains[sub_url] = sub_ip
+                    
+        if mapped_subdomains:
+            print_report(mapped_subdomains)
+        else:
+            print(f"{RED}[x] Zero active custom zone mutations map to our standard dictionary listings.{R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "08":
+    elif choice == "08" or choice == "8":
         print(f"\n{YELLOW}[!] Launching Live DNS Resolver & Network Scraper...{R}")
         target = input("Enter target domain (e.g., google.com): ").strip()
         print(f"{GREEN}[*] Initializing registry collection parameters for {target}...{R}")
         try:
-            # Resolves the main target down to a physical hosting server address using native sockets
             resolved_ip = socket.gethostbyname(target)
             dns_metrics = {
                 "Target Domain": target,
@@ -185,7 +234,7 @@ while True:
             print(f"{RED}[x] Network resolution failed: Could not trace target infrastructure. ({e}){R}")
         input("\nPress Enter to return to menu...")
         
-    elif choice == "09":
+    elif choice == "09" or choice == "9":
         print(f"\n{YELLOW}[!] Launching Email & Core Identifier Breach Auditor...{R}")
         target = input("Enter target identifier (Email or Phone String): ").strip()
         print(f"{GREEN}[*] Commencing deep-scan across historical leak configurations for: {target}{R}")
@@ -205,7 +254,8 @@ while True:
         target = input("Enter target remote IP address (e.g., 8.8.8.8): ").strip()
         print(f"{GREEN}[*] Fetching live geolocation record matrices from network tables...{R}")
         try:
-            with urllib.request.urlopen(f"https://ipapi.co/{target}/json/", timeout=5) as url:
+            req = urllib.request.Request(f"https://ipapi.co/{target}/json/", headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as url:
                 data = json.loads(url.read().decode())
                 if "error" not in data:
                     geo_metrics = {
@@ -236,7 +286,7 @@ while True:
         print_report(registry_data)
         input("\nPress Enter to return to menu...")
         
-    elif choice == "00":
+    elif choice == "00" or choice == "0":
         print(f"\n{RED}[!] Exiting system. Have a great day.{R}")
         break
         
