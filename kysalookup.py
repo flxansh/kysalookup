@@ -6,15 +6,19 @@ import json
 import socket
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
+from dotenv import load_dotenv  # <-- Import the dotenv engine
 
-# Clean ANSI Escape Color Codes
-RED = '\033[31m'      
-W = '\033[97m'        
-R = '\033[0m'         
+# 1. Load configuration from .env file immediately on startup
+load_dotenv()
+
+# Clean ANSI Escape Color Codes (Fixed invisible non-breaking space characters)
+RED = '\033[31m'
+W = '\033[97m'
+R = '\033[0m'
 CYAN = '\033[36m'
 YELLOW = '\033[33m'
 GREEN = '\033[32m'
-BR = f"\033[1m{RED}"  
+BR = f"\033[1m{RED}"
 
 def display_menu():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -63,6 +67,8 @@ def check_subdomain(domain, sub):
     """Worker function for option 07 network probing."""
     subdomain = f"{sub}.{domain}"
     try:
+        socket.gethostbyname(subdomain)
+        # Verify IP resolve mapping
         ip = socket.gethostbyname(subdomain)
         return subdomain, ip
     except socket.gaierror:
@@ -124,7 +130,6 @@ while True:
             req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
             with urllib.request.urlopen(req, timeout=5) as response:
                 html_content = response.read().decode('utf-8')
-                # If the alias does not exist, Telegram shows a specific meta attribute redirect page
                 if "tgme_page_extra" in html_content or "View in Telegram" in html_content:
                     telegram_metrics = {
                         "Handle Name": f"@{target}",
@@ -198,11 +203,9 @@ while True:
         target = input("Enter core domain root (e.g., target.com): ").strip().lower().replace("https://", "").replace("http://", "")
         print(f"{GREEN}[*] Spawning network threads to evaluate active zones for: {target}{R}\n")
         
-        # High-velocity footprint array (common subdomains)
         common_subs = ["www", "mail", "ftp", "admin", "blog", "dev", "staging", "api", "test", "portal", "secure", "webmail", "shop", "cpanel"]
         mapped_subdomains = {}
         
-        # Multi-threading executor splits the lookups to solve instantly
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(check_subdomain, target, sub) for sub in common_subs]
             for future in futures:
@@ -250,11 +253,19 @@ while True:
         input("\nPress Enter to return to menu...")
         
     elif choice == "10":
+        # 2. Loading IP Geolocation API Key dynamically from .env
+        ip_api_key = os.getenv("IPINFO_API_KEY") 
+        
         print(f"\n{YELLOW}[!] Launching Threat IP Geolocation Mapper...{R}")
         target = input("Enter target remote IP address (e.g., 8.8.8.8): ").strip()
         print(f"{GREEN}[*] Fetching live geolocation record matrices from network tables...{R}")
         try:
-            req = urllib.request.Request(f"https://ipapi.co/{target}/json/", headers={'User-Agent': 'Mozilla/5.0'})
+            # Structuring the call using your environment token if available
+            api_url = f"https://ipapi.co/{target}/json/"
+            if ip_api_key:
+                api_url += f"?key={ip_api_key}"
+                
+            req = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=5) as url:
                 data = json.loads(url.read().decode())
                 if "error" not in data:
