@@ -1,0 +1,14 @@
+# --- Core Network & API Requests ---
+requests>=2.31.0          # Handles HTTP requests to lookup APIs (IPs, DNS, etc.)
+urllib3>=2.0.0            # Under-the-hood HTTP connections and SSL handling
+
+# --- Web Scraping & Data Extraction ---
+beautifulsoup4>=4.12.0    # Parses HTML/XML for custom web scrapers
+lxml>=5.1.0               # High-speed parser backend for BeautifulSoup
+
+# --- CLI Aesthetics & Interface ---
+colorama>=0.4.6           # Gives your terminal colored outputs (red errors, green success)
+rich>=13.7.0              # Builds beautiful terminal tables, progress bars, and panels
+
+# --- Security & Configuration ---
+python-dotenv>=1.0.1      # Securely loads API keys from a hidden .env file
