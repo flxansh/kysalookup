@@ -6,12 +6,11 @@ import json
 import socket
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
-from dotenv import load_dotenv  # <-- Import the dotenv engine
+from dotenv import load_dotenv  # Load configuration from .env file immediately on startup
 
-# 1. Load configuration from .env file immediately on startup
 load_dotenv()
 
-# Clean ANSI Escape Color Codes (Fixed invisible non-breaking space characters)
+# ANSI Escape Color Codes
 RED = '\033[31m'
 W = '\033[97m'
 R = '\033[0m'
@@ -25,11 +24,11 @@ def display_menu():
     print(f"""{BR}
 ██╗  ██╗██╗   ██╗███████╗ █████╗ 
 ██║ ██╔╝╚██╗ ██╔╝██╔════╝██╔══██╗
-█████╔╝  ╚████╔╝ ███████╗███████║
-██╔═██╗   ╚██╔╝  ╚════██║██╔══██║
-██║  ██╗   ██║   ███████║██║  ██║
-╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝{R}""")
-    print(f"{W}      [ Developer: Ansh ] [ Engine Version: 2.0-Live ]{R}\n")
+█████╔╝   ╚████╔╝ ███████╗███████║
+██╔═██╗    ╚██╔╝  ╚════██║██╔══██║
+██║  ██╗    ██║   ███████║██║  ██║
+╚═╝  ╚═╝    ╚═╝   ╚══════╝╚═╝  ╚═╝{R}""")
+    print(f"{W}      [ Developer: Ansh ] [ Engine Version: 2.1-Enhanced ]{R}\n")
     
     print(f"{RED}[Core Modules]         {RED}[System & Plugins]{R}")
     print(f" {RED}[01]{W} Phone Number Lookup      {RED}[00]{W} Exit System")
@@ -39,8 +38,8 @@ def display_menu():
     print(f" {RED}[05]{W} Global Username Scanner   {W} Run options to collect")
     print(f" {RED}[06]{W} Image Metadata (EXIF)     {W} forensic modules.")
     print(f" {RED}[07]{W} Website Subdomain Map")
-    print(f" {RED}[08]{W} DNS & WHOIS Records       {RED} [KYSA SUPPORT: ACTIVE]{R}")
-    print(f" {RED}[09]{W} Email Breach Auditor")
+    print(f" {RED}[08]{W} DNS & WHOIS Records       {RED}  [KYSA SUPPORT: ACTIVE]{R}")
+    print(f" {RED}[09]{W} Email & Phone Breach Auditor")
     print(f" {RED}[10]{W} Threat IP Geolocation")
     print(f" {RED}[11]{W} Public Registry Mapping")
     print(f"\n{CYAN}─(admin@kysavault)─[C:\\Kysa-Tools]{R}")
@@ -67,8 +66,6 @@ def check_subdomain(domain, sub):
     """Worker function for option 07 network probing."""
     subdomain = f"{sub}.{domain}"
     try:
-        socket.gethostbyname(subdomain)
-        # Verify IP resolve mapping
         ip = socket.gethostbyname(subdomain)
         return subdomain, ip
     except socket.gaierror:
@@ -83,14 +80,12 @@ while True:
         print(f"\n{YELLOW}[!] Launching Comprehensive Phone Lookup System...{R}")
         target = input("Enter target number (with +, e.g., +91xxxxxxxxx): ").strip()
         
-        # 1. Guard against blank input
         if not target:
             print(f"\n{RED}[x] Error: Phone number cannot be blank.{R}")
             input("\nPress Enter to return to menu...")
             continue
             
         try:
-            # 2. Proper handling for the phonenumbers library
             import phonenumbers
             from phonenumbers import geocoder, carrier, timezone
             
@@ -107,11 +102,29 @@ while True:
                 }
                 print_report(results)
                 
-                print(f"{RED}[ Layer 2: Advanced Identity Pivots (Integrate Truecallerpy) ]{R}")
-                print(f"{CYAN}[-]- Caller ID Name    : Run 'truecallerpy login' to sync your session ID.{R}")
+                print(f"{RED}[ Layer 2: Advanced Identity Pivots (Truecaller Registry) ]{R}")
+                try:
+                    import truecallerpy
+                    tc_token = os.getenv("TRUECALLER_AUTH_KEY")
+                    if tc_token:
+                        print(f"{YELLOW}[*] Querying live truecaller intelligence grids...{R}")
+                        cc = str(parsed_number.country_code)
+                        num = str(parsed_number.national_number)
+                        response = truecallerpy.search_phonenumber(num, cc, tc_token)
+                        if response and 'data' in response:
+                            data = response['data'][0]
+                            tc_metrics = {
+                                "Caller Identity": data.get('name', 'Hidden/Not Set'),
+                                "Network Operator": data.get('carrier', 'Unknown'),
+                                "Profile Location": data.get('addresses', [{}])[0].get('city', 'Unknown')
+                            }
+                            print_report(tc_metrics)
+                    else:
+                        print(f"{CYAN}[-]- Caller ID Name    : Run 'python -m truecallerpy login' and add key to your .env file.{R}")
+                except ImportError:
+                    print(f"{CYAN}[-]- Caller ID Name    : Install truecallerpy package to enable advanced resolution grids.{R}")
                 
         except ImportError:
-            # Catching missing installation explicitly
             print(f"\n{RED}[x] Dependency Missing: Run 'pip install phonenumbers' before using this module.{R}")
         except Exception as e:
             print(f"\n{RED}[x] Parsing Error: Unable to evaluate the input string. ({e}){R}")
@@ -132,23 +145,15 @@ while True:
         else:
             print(f"{GREEN}[*] Interrogating gateway endpoints for VPA validation...{R}")
             try:
-                # Using a public validation endpoint layout (e.g., Razorpay validation structure)
-                # Note: Public endpoints often check syntax and handle validity
                 username, handle = target.split('@', 1)
-                
-                # Let's perform a live syntax and structure mapping
                 results = {
                     "Virtual Payment Address": target,
                     "Username Handle": username,
                     "Gateway Provider / Bank": handle.upper(),
                     "Structure Status": "Valid VPA Format",
                 }
-                
-                # If you want to integrate a live payment API later, you would add the request here.
-                # For a local tool, we extract the core components cleanly:
                 print_report(results)
-                
-                print(f"{CYAN}[i] Note: To fetch live account holder names, integrate a merchant API key (e.g., Razorpay/Cashfree vpa validate) into your .env file.{R}")
+                print(f"{CYAN}[i] Note: To fetch live account holder names, integrate a merchant API key into your .env file.{R}")
                 
             except Exception as e:
                 print(f"\n{RED}[x] Gateway Error: Unable to complete validation array. ({e}){R}")
@@ -164,16 +169,13 @@ while True:
             input("\nPress Enter to return to menu...")
             continue
             
-        # Basic Indian registration layout check (Minimum 4 characters like MH12)
         if len(target) < 4:
             print(f"{RED}[x] Error: Invalid registration format. Must include State and RTO code.{R}")
         else:
             print(f"{GREEN}[*] Interrogating regional transportation register zones...{R}")
-            
             state_code = target[:2]
             rto_code = target[2:4]
             
-            # Common State Registry Matrix
             state_matrix = {
                 "MH": "Maharashtra", "DL": "Delhi", "KA": "Karnataka", 
                 "HR": "Haryana", "UP": "Uttar Pradesh", "GJ": "Gujarat",
@@ -182,8 +184,6 @@ while True:
             }
             
             state_name = state_matrix.get(state_code, "Unknown / Other State Jurisdiction")
-            
-            # Dynamic extraction layout
             rto_results = {
                 "Parsed Plate": target,
                 "State Jurisdiction": state_name,
@@ -191,7 +191,6 @@ while True:
                 "RTO Zone Code": rto_code,
                 "Registration Status": "Format Verified"
             }
-            
             print_report(rto_results)
             print(f"{CYAN}[i] Note: Live owner name/chassis lookups require integrating commercial VAHAN APIs into your .env.{R}")
             
@@ -213,9 +212,6 @@ while True:
             req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
             with urllib.request.urlopen(req, timeout=5) as response:
                 html_content = response.read().decode('utf-8')
-                
-                # Refined validation logic: 'tgme_page_extra' contains subscriber/member count details.
-                # If a page doesn't exist, Telegram displays a "stealth" redirect box without this block.
                 if "tgme_page_extra" in html_content and "tgme_page_error" not in html_content:
                     telegram_metrics = {
                         "Handle Name": f"@{target}",
@@ -241,17 +237,14 @@ while True:
             continue
             
         print(f"{GREEN}[*] Spawning parallel network workers to scan footprint matrices...{R}\n")
-        
         platforms = {
             "GitHub": "https://github.com/{}",
             "Reddit": "https://www.reddit.com/user/{}",
-            "Twitch": "https://www.twitch.tv/{}",  # Fixed correct URL .tv
+            "Twitch": "https://www.twitch.tv/{}",
             "Linktree": "https://linktr.ee/{}"
         }
-        
         found_accounts = {}
         
-        # Worker function for parallel execution
         def scan_platform(name, url_template):
             full_url = url_template.format(target)
             try:
@@ -259,18 +252,14 @@ while True:
                     full_url, 
                     headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
                 )
-                # Shorter timeout (2.5s) keeping threads snappy
                 with urllib.request.urlopen(req, timeout=2.5) as response:
                     if response.status == 200:
                         return name, full_url
             except Exception:
-                # Catching 404s and connection limits safely
                 pass
             return None
 
-        # Execute threads concurrently using ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=5) as executor:
-            # Map the worker across all dict structures
             futures = [executor.submit(scan_platform, name, url) for name, url in platforms.items()]
             for future in futures:
                 result = future.result()
@@ -286,33 +275,31 @@ while True:
         input("\nPress Enter to return to menu...")
         
     elif choice == "06" or choice == "6":
-            print(f"\n{YELLOW}[!] Launching Image Metadata (EXIF) Reader...{R}")
-            target = input("Enter exact target path to image file (e.g., photo.jpg): ").strip()
-            try:
-                from PIL import Image
-                from PIL.ExifTags import TAGS
-                
-                with Image.open(target) as img:
-                    info = img._getexif()
-                    if info:
-                        exif_data = {}
-                        for tag, value in info.items():
-                            decoded = TAGS.get(tag, tag)
-                            exif_data[str(decoded)] = str(value)
-                        print_report(exif_data)
-                    else:
-                        print(f"{RED}[x] Document parsed completely but no hidden EXIF data block was detected.{R}")
-            except ImportError:
-                print(f"{RED}[x] Dependency Missing: Run 'pip install Pillow' to process hardware media files.{R}")
-            except Exception as e:
-                print(f"{RED}[x] Error parsing image file context: {e}{R}")
-            input("\nPress Enter to return to menu...")
+        print(f"\n{YELLOW}[!] Launching Image Metadata (EXIF) Reader...{R}")
+        target = input("Enter exact target path to image file (e.g., photo.jpg): ").strip()
+        try:
+            from PIL import Image
+            from PIL.ExifTags import TAGS
+            
+            with Image.open(target) as img:
+                info = img._getexif()
+                if info:
+                    exif_data = {}
+                    for tag, value in info.items():
+                        decoded = TAGS.get(tag, tag)
+                        exif_data[str(decoded)] = str(value)
+                    print_report(exif_data)
+                else:
+                    print(f"{RED}[x] Document parsed completely but no hidden EXIF data block was detected.{R}")
+        except ImportError:
+            print(f"{RED}[x] Dependency Missing: Run 'pip install Pillow' to process hardware media files.{R}")
+        except Exception as e:
+            print(f"{RED}[x] Error parsing image file context: {e}{R}")
+        input("\nPress Enter to return to menu...")
         
     elif choice == "07" or choice == "7":
         print(f"\n{YELLOW}[!] Launching Live Asynchronous Subdomain Mapper...{R}")
         target = input("Enter core domain root (e.g., target.com): ").strip().lower()
-        
-        # Strip protocols and common trailing characters out safely
         target = target.replace("https://", "").replace("http://", "").split('/')[0]
         
         if not target:
@@ -321,23 +308,9 @@ while True:
             continue
             
         print(f"{GREEN}[*] Spawning network threads to evaluate active zones for: {target}{R}\n")
-        
         common_subs = ["www", "mail", "ftp", "admin", "blog", "dev", "staging", "api", "test", "portal", "secure", "webmail", "shop", "cpanel"]
         mapped_subdomains = {}
         
-        # Define the missing worker function locally
-        def check_subdomain(root_domain, subdomain_prefix):
-            import socket
-            full_subdomain = f"{subdomain_prefix}.{root_domain}"
-            try:
-                # Resolve DNS directly via standard socket protocols (ultra fast)
-                resolved_ip = socket.gethostbyname(full_subdomain)
-                return full_subdomain, resolved_ip
-            except Exception:
-                # If DNS resolution fails (domain doesn't exist), skip it
-                return None
-        
-        # Execute the threads concurrently
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(check_subdomain, target, sub) for sub in common_subs]
             for future in futures:
@@ -356,8 +329,6 @@ while True:
     elif choice == "08" or choice == "8":
         print(f"\n{YELLOW}[!] Launching Live DNS Resolver & Network Scraper...{R}")
         target = input("Enter target domain (e.g., google.com): ").strip().lower()
-        
-        # Strip protocols out just in case the user types an entire URL
         target = target.replace("https://", "").replace("http://", "").split('/')[0]
         
         if not target:
@@ -367,18 +338,12 @@ while True:
             
         print(f"{GREEN}[*] Initializing registry collection parameters for {target}...{R}")
         try:
-            import socket
-            
-            # 1. Resolve Primary Host IP (A Record mapping)
             resolved_ip = socket.gethostbyname(target)
-            
-            # 2. Advanced Network Scraping: Fetch Canonical Name (CNAME) / Fully Qualified Domain Name (FQDN)
             try:
                 fqdn_name = socket.getfqdn(target)
             except Exception:
                 fqdn_name = "Not Available"
                 
-            # 3. Network Mapping: Look up associated Hostname Aliases
             try:
                 hostname, aliases, ip_list = socket.gethostbyname_ex(target)
                 available_ips = ", ".join(ip_list)
@@ -393,10 +358,7 @@ while True:
                 "Resolution Status": "Success",
                 "Node Authority": "Public Record Active"
             }
-            
             print_report(dns_metrics)
-            
-            # Layer 2 Info Tip for future expansion
             print(f"{CYAN}[i] Tip: For comprehensive MX, TXT, and NS records profiling, consider adding 'dnspython' to requirements.txt{R}")
             
         except Exception as e:
@@ -405,23 +367,24 @@ while True:
         input("\nPress Enter to return to menu...")
         
     elif choice == "09" or choice == "9":
-        print(f"\n{YELLOW}[!] Launching Email & Core Identifier Breach Auditor...{R}")
-        target = input("Enter target identifier (Email address): ").strip()
+        print(f"\n{YELLOW}[!] Launching Email & Phone Breach Auditor...{R}")
+        target = input("Enter target Email or Phone Number (e.g., 91xxxxxxxxxx): ").strip()
         
         if not target:
             print(f"\n{RED}[x] Error: Input identifier cannot be blank.{R}")
             input("\nPress Enter to return to menu...")
             continue
 
-        # Check for HaveIBeenPwned API Key in your vault configuration
+        if target.startswith("+"):
+            target = target.replace("+", "").replace(" ", "")
+
         hibp_key = os.getenv("HIBP_API_KEY")
-        
         print(f"{GREEN}[*] Commencing deep-scan across historical leak records for: {target}{R}")
         
         if hibp_key:
             try:
-                # Live integration structure using official HIBP v3 protocol layout
-                api_url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{urllib.parse.quote(target)}"
+                # FIXED: Changed urllib.parse.quote(target) to quote(target) to match the import statement
+                api_url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{quote(target)}"
                 req = urllib.request.Request(
                     api_url, 
                     headers={
@@ -432,38 +395,34 @@ while True:
                 with urllib.request.urlopen(req, timeout=5) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode())
-                        # Parse out individual breach instances
                         breaches = [item.get('Name') for item in data]
                         audit_results = {
-                            "Audited Account": target,
-                            "Breach Status": f"EXPOSED in {len(breaches)} major incidents",
+                            "Audited Target": target,
+                            "Breach Status": f"EXPOSED in {len(breaches)} historical databases",
                             "Incident Sources": ", ".join(breaches[:5])
                         }
                         print_report(audit_results)
             except urllib.error.HTTPError as e:
                 if e.code == 404:
-                    print(f"\n{GREEN}[+] Clean Record: No public historical exposure logs found for this account.{R}")
+                    print(f"\n{GREEN}[+] Clean Record: No public historical exposure logs found for this target.{R}")
                 else:
                     print(f"\n{RED}[x] API Error encountered during server lookup code: {e.code}{R}")
             except Exception as e:
                 print(f"\n{RED}[x] Audit pipeline dropped: Connection timeout. ({e}){R}")
         else:
-            # Safe simulation fallback if no production API token is active
             time.sleep(1.2)
             generic_sample = {
-                "Audited Account": target,
-                "Breach Status": "Simulation Mode (No Key Detected)",
-                "Sample Result Matrix": "Integrate HIBP_API_KEY in your .env for live tracking",
-                "Exposed Data Classes": "Passwords, Emails, Usernames (Example Log)"
+                "Audited Target": target,
+                "Breach Status": "Simulation Mode (No HIBP Key Detected)",
+                "Action Required": "Integrate HIBP_API_KEY in your .env file for live results",
+                "Information": "Will scan for matching emails and international phone records."
             }
             print_report(generic_sample)
             
         input("\nPress Enter to return to menu...")
         
     elif choice == "10":
-        # Loading IP Geolocation API Key dynamically from .env
         ip_api_key = os.getenv("IPINFO_API_KEY") 
-        
         print(f"\n{YELLOW}[!] Launching Threat IP Geolocation Mapper...{R}")
         target = input("Enter target remote IP address (e.g., 8.8.8.8): ").strip()
         
@@ -474,7 +433,6 @@ while True:
 
         print(f"{GREEN}[*] Fetching live geolocation record matrices from network tables...{R}")
         try:
-            # Structuring the call using your environment token if available
             api_url = f"https://ipapi.co/{target}/json/"
             if ip_api_key:
                 api_url += f"?key={ip_api_key}"
@@ -483,7 +441,6 @@ while True:
             with urllib.request.urlopen(req, timeout=5) as url:
                 raw_response = url.read().decode()
                 
-                # Check if the server sent a webpage instead of raw data
                 if "<html" in raw_response.lower() or "<!doctype" in raw_response.lower():
                     print(f"\n{RED}[x] API Blocked/Redirected: The server sent back a website page instead of data.{R}")
                     print(f"{RED}    This happens if your key is invalid or you hit the free daily limit.{R}")
@@ -515,17 +472,15 @@ while True:
         print(f"{GREEN}[*] Auditing public index clusters for: {target}...{R}")
         time.sleep(1.0)
         
-        # Smart Structural Analysis: If user inputs an Indian PAN-style string (e.g., ABCDE1234F)
         if len(target) == 10 and target[:5].isalpha() and target[5:9].isdigit() and target[9].isalpha():
             pan_upper = target.upper()
             status_char = pan_upper[3]
             
-            # Map out standard status structures
             status_matrix = {
                 "P": "Individual Person",
                 "C": "Company / Corporate Entity",
                 "H": "Hindu Undivided Family (HUF)",
-                "F": "Firm / Partnership Partnership",
+                "F": "Firm / Partnership",
                 "A": "Association of Persons (AOP)"
             }
             entity_type = status_matrix.get(status_char, "Registered Category Entity")
@@ -538,7 +493,6 @@ while True:
             }
             print_report(registry_data)
         else:
-            # Clean general simulation fallback
             registry_data = {
                 "Query Target": target,
                 "Verification Status": "Simulation Mode Active",
